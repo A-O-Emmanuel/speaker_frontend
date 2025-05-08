@@ -4,11 +4,11 @@ export default function Home() {
       <section className=" text-white h-[60vh] flex flex-col justify-center items-center text-center">
         <div className="text-2xl font-bold mb-4">
           <h1>
-            Bring your scripts to life with Deep Fusion Films' AI powered script
+            Bring your scripts to life with Deep Fusion Films' ScriptReadr, an AI powered script
             reading
           </h1>
           <p>
-            tools to help you create, format and polish your scripts like a pro
+            tool that brings voice and character to your scripts, formats and polish your scripts like a pro
           </p>
         </div>
 
@@ -34,13 +34,13 @@ export default function Home() {
               AI Script suggestions
             </h2>
             <p className="text-sm text-gray-600">
-              Get real time ideas and fixes as you write
+              Get real time ideas and fixes to your scripts
             </p>
           </div>
           <div className="bg-white shadow-md p-6 rounded lg:p-15">
-            <h2 className="text-lg font-semibold mb-2">Automatic Formating</h2>
+            <h2 className="text-lg font-semibold mb-2">Listen to your scripts</h2>
             <p className="text-sm text-gray-600">
-              Industy-standard formats in one click
+              No need to spend hours reading your scripts
             </p>
           </div>
           <div className="bg-white shadow-md p-6 rounded lg:p-15">
@@ -74,15 +74,15 @@ export default function Home() {
             </p>
           </div>
           <div className="bg-white shadow-md p-6 rounded lg:p-15">
-            <h2 className="text-lg font-semibold mb-2">Start a new script or use a template</h2>
+            <h2 className="text-lg font-semibold mb-2">Upload your scripts or use a template</h2>
             <p className="text-sm text-gray-600">
-              Import your already pre-written script or use one of the templates available to you.
+              Import your already pre-written scripts or use one of the templates available to you.
             </p>
           </div>
           <div className="bg-white shadow-md p-6 rounded lg:p-15">
-            <h2 className="text-lg font-semibold mb-2">Write, Edit, Collaborate</h2>
+            <h2 className="text-lg font-semibold mb-2">Listen, Write, Edit</h2>
             <p className="text-sm text-gray-600">
-              Adjust your script for your desired outcome, collaborate with your team.
+              Listen to your script, adjust your script for your desired outcome.
             </p>
           </div>
           <div className="bg-white shadow-md p-6 rounded lg:p-15">

@@ -22,8 +22,11 @@ export default function Header() {
               <Link to="contact">Contact us</Link>
             </li>
           </ul>
+          <div className="ml-auto hidden mr-10 bg-white py-2 px-4 rounded hover:text-[#083B74]">
+              <Link to="/dashboard">Dashboard</Link>
+          </div>
           <div className="ml-auto mr-10 bg-white py-2 px-4 rounded hover:text-[#083B74]">
-              <Link to="login">Login</Link>
+              <Link to="signin">Login</Link>
           </div>
       </nav>
     </>

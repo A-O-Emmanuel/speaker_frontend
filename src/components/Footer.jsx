@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
@@ -6,10 +8,10 @@ export default function Footer() {
       <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
         {/* Navigation Links */}
         <ul className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 text-sm">
-          <li><a href="#">Terms of Use</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Disclaimer</a></li>
-          <li><a href="#">FAQ</a></li>
+          <li><Link to="/termsofuse">Terms of Use</Link></li>
+          <li><Link to="/privacypolicies">Privacy Policies</Link></li>
+          <li><Link to="/disclaimer">Disclaimer</Link></li>
+          <li><Link to="/faq">FAQ</Link></li>
         </ul>
 
         {/* Social Media Icons */}
