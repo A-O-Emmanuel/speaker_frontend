@@ -26,7 +26,7 @@ export default function Pricing() {
         <h2 >
           Choose Your Plan
         </h2>
-        <p className="text-center text-sm text-gray-600 mt-1">Our billing cycle is monthly but you can cancel your plan anytime</p>
+        <p className="text-center text-sm text-white mt-1">Our billing cycle is monthly but you can cancel your plan anytime</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">

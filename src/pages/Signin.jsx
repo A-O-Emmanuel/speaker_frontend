@@ -34,7 +34,10 @@ export default function Sign() {
               Password
             </label>
 
-            <Link to='/resetpassword' className="absolute right-0 text-sm text-[#2E3A87] hover:underline">
+            <Link
+              to="/resetpassword"
+              className="absolute right-0 text-sm text-[#2E3A87] hover:underline"
+            >
               Forgot Password?
             </Link>
 
@@ -46,20 +49,19 @@ export default function Sign() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-[#2E3A87] text-white py-2 rounded-md hover:bg-[#1e2e6f] transition duration-300 hover:cursor-pointer"
-          >
-            Sign In
-          </button>
+          <Link to="/dashboard">
+            <button
+              type="submit"
+              className="w-full bg-[#2E3A87] text-white py-2 rounded-md hover:bg-[#1e2e6f] transition duration-300 hover:cursor-pointer"
+            >
+              Sign In
+            </button>
+          </Link>
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Don’t have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-[#2E3A87] hover:underline"
-          >
+          <Link to="/signup" className="text-[#2E3A87] hover:underline">
             Register for free
           </Link>
         </p>
