@@ -10,6 +10,8 @@ import { FiUpload } from "react-icons/fi";
 export default function DashboardLayout() {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+
 
   const fileInputRef = useRef(null);
 
@@ -17,20 +19,82 @@ export default function DashboardLayout() {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
       console.log("Loaded file:", file.name);
       // You can now read the file or upload it
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("http://localhost:8000/file/upload/", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("upload successful:", data);
+          setText(data.cleaned_text);
+        } else {
+          console.error("upload failed:", response.statusText);
+          //load jsx component
+        }
+      } catch (error) {
+        console.error("error uploading file:", error);
+        //load jsx component
+      } finally {
+        event.target.value = "";
+      }
     }
   };
 
-  const handleSelect = (type) => {
+  const handleNewScript = () => {
+    setText("");
+  };
+
+  //handle format
+
+  //play script
+  const handlePlayScript = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/audio/tts/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`TTS request failed with status ${response.status}`);
+      }
+  
+      const audioBlob = await response.blob();
+      setAudioBlob(audioBlob);
+      const audioURL = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioURL);
+      audio.play();
+    } catch (error) {
+      console.error("Error playing TTS audio:", error);
+    }
+  };
+  
+  const handleSaveScript = async (type) => {
     setOpen(false);
     if (type === "file") {
-      console.log("Save as file");
-    } else if (type === "audio") {
-      console.log("Export as audio");
+      console.log("file saved")
+    }
+     else if (type === "audio") {
+      if(audioBlob) {
+        const url = URL.createObjectURL(audioBlob)
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "script.mp3";
+        a.click();
+      } else {
+        console.warn("No audio to download yet")
+      }
+      //console.log("Export as audio");
     }
   };
 
@@ -90,7 +154,7 @@ export default function DashboardLayout() {
           <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm mb-4">
             <input
               type="file"
-              accept=".txt,.pdf" // adjust based on what you want to allow
+              accept=".txt,.pdf,.docx" // adjust based on what you want to allow
               ref={fileInputRef}
               className="hidden"
               onChange={handleFileChange}
@@ -103,7 +167,10 @@ export default function DashboardLayout() {
               <FiUpload />
               Load Script
             </button>
-            <button className="py-1 px-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition">
+            <button
+              onClick={handleNewScript}
+              className="py-1 px-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
+            >
               New Script
             </button>
 
@@ -118,14 +185,14 @@ export default function DashboardLayout() {
 
               {open && (
                 <div className="absolute z-10 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg">
-                  <button
-                    onClick={() => handleSelect("file")}
+                  {/* <button
+                    onClick={() => handleSaveScript("file")}
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FiFileText className="mr-2" /> Save as File
-                  </button>
+                  </button> */}
                   <button
-                    onClick={() => handleSelect("audio")}
+                    onClick={() => handleSaveScript("audio")}
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FiMusic className="mr-2" /> Export as Audio
@@ -150,7 +217,11 @@ export default function DashboardLayout() {
                 <option value="screenplay">Screenplay</option>
               </select>
             </div>
-            <button className="flex items-center gap-2 py-1 px-3 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition">
+
+            <button
+              onClick={handlePlayScript}
+              className="flex items-center gap-2 py-1 px-3 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition"
+            >
               <FaPlay />
               Play Script
             </button>
@@ -192,7 +263,9 @@ export default function DashboardLayout() {
                 <p className=" bg-teal-700 text-white p-4">Speaker List:</p>
               </div>
               <div className="absolute bottom-0 left-0 border p-4 bg-teal-700 text-white w-full">
-                <button className="border rounded-md px-4 py-2 text-sm hover:cursor-pointer" >Update Speaker List</button>
+                <button className="border rounded-md px-4 py-2 text-sm hover:cursor-pointer">
+                  Update Speaker List
+                </button>
               </div>
             </div>
           </div>
