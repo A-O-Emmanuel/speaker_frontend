@@ -40,7 +40,7 @@ export default function DashboardLayout() {
       formData.append("file", file);
 
       try {
-        const response = await fetch("http://localhost:8000/file/upload/", {
+        const response = await fetch("https://speaker-backend-jqqw.onrender.com/file/upload/", {
           method: "POST",
           body: formData,
         });
@@ -73,7 +73,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     const fetchVoices = async() => {
       try {
-        const response = await fetch("http://localhost:8000/audio/tts/");
+        const response = await fetch("https://speaker-backend-jqqw.onrender.com/audio/tts/");
         if(!response.ok) throw new Error("Failed to load voices");
         const data = await response.json();
         setVoices(data);
@@ -108,7 +108,7 @@ export default function DashboardLayout() {
     setIsLoading(true); //start loading
 
     try {
-      const response = await fetch("http://localhost:8000/audio/tts/", {
+      const response = await fetch("https://speaker-backend-jqqw.onrender.com/audio/tts/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, voice_id: selectedVoice }),
