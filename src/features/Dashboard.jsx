@@ -1,20 +1,32 @@
-import { useState } from "react";
-import { useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { Link } from "react-router-dom";
 
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaPause, FaStop } from "react-icons/fa";
 import { FiSave, FiFileText, FiMusic } from "react-icons/fi";
 import { FiUpload } from "react-icons/fi";
+
+import  SideBar from "./SideBar"
+
 
 export default function DashboardLayout() {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
-  const [audioBlob, setAudioBlob] = useState(null);
 
+  const [abortController, setAbortController] = useState(null);
 
+  //check if audio file is loading
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [saveAudio, setSaveAudio] = useState(null);
+  //state for playing, pausing and stopping the audio
+  const [audio, setAudio] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  //
+
+  //handle upload files
   const fileInputRef = useRef(null);
-
   const handleClick = () => {
     fileInputRef.current.click();
   };
@@ -54,45 +66,115 @@ export default function DashboardLayout() {
     setText("");
   };
 
-  //handle format
+  //get available voices
+  const [voices, setVoices] = useState([]);
+  const [selectedVoice, setSelectedVoice] = useState("");
 
-  //play script
+  useEffect(() => {
+    const fetchVoices = async() => {
+      try {
+        const response = await fetch("http://localhost:8000/audio/tts/");
+        if(!response.ok) throw new Error("Failed to load voices");
+        const data = await response.json();
+        setVoices(data);
+      }catch (err) {
+        console.error("Error loading voices", err);
+      }
+    };
+
+    fetchVoices();
+  }, []);
+
+  //handle play script
   const handlePlayScript = async () => {
+    if (isLoading || isPlaying) return;
+    if (audio && isPaused) {
+      audio.play();
+      setIsPlaying(true);
+      setIsPaused(false);
+      return;
+    }
+
+    //stop play script request
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    //check if there is no text
+    if (!text) {
+      alert("You need to type or upload a script to play");
+      return;
+    }
+
+    setIsLoading(true); //start loading
+
     try {
       const response = await fetch("http://localhost:8000/audio/tts/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, voice_id: selectedVoice }),
+        signal:controller.signal
       });
-  
+
       if (!response.ok) {
         throw new Error(`TTS request failed with status ${response.status}`);
       }
-  
+
       const audioBlob = await response.blob();
-      setAudioBlob(audioBlob);
+
+      setSaveAudio(audioBlob)
+      //setAudioBlob(audioBlob);
       const audioURL = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioURL);
-      audio.play();
+      const newAudio = new Audio(audioURL);
+
+      newAudio.onended = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+
+      await newAudio.play();
+      setAudio(newAudio);
+      setIsPlaying(true);
+      setIsPaused(false);
+      newAudio.play();
     } catch (error) {
       console.error("Error playing TTS audio:", error);
+    } finally {
+      setIsLoading(false);
+      setAbortController(null);
     }
   };
-  
+
+  const handlePause = () => {
+    if (audio && isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+      setIsPaused(true);
+    }
+  };
+
+  const handleStop = () => {
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      setIsPlaying(false);
+      setIsPaused(false);
+    }
+  };
+
   const handleSaveScript = async (type) => {
     setOpen(false);
     if (type === "file") {
-      console.log("file saved")
-    }
-     else if (type === "audio") {
-      if(audioBlob) {
-        const url = URL.createObjectURL(audioBlob)
+      console.log("file saved");
+    } else if (type === "audio") {
+      if (saveAudio) {
+        const url = URL.createObjectURL(saveAudio);
         const a = document.createElement("a");
         a.href = url;
         a.download = "script.mp3";
         a.click();
       } else {
-        console.warn("No audio to download yet")
+        alert("no audio to download");
+        console.warn("No audio to download yet");
       }
       //console.log("Export as audio");
     }
@@ -109,45 +191,9 @@ export default function DashboardLayout() {
       </nav>
 
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside className="w-64 bg-gray-100 border-r p-4 flex flex-col justify-between">
-          <div>
-            <nav className="space-y-4 text-gray-800 font-medium">
-              <Link to="/userprofile" className="block hover:text-teal-600">
-                Account
-              </Link>
-              <Link className="block hover:text-teal-600">Subscription</Link>
-              <div className="text-sm text-gray-600 mt-2 ml-2">
-                Free –{" "}
-                <span className="font-semibold text-green-600">Current</span>
-              </div>
-              <Link
-                to="/pricing"
-                className="block mt-4 text-yellow-600 hover:underline"
-              >
-                Get Premium
-              </Link>
-              <Link
-                to="/pricing"
-                className="block text-purple-600 hover:underline"
-              >
-                Get Pro
-              </Link>
-            </nav>
-          </div>
 
-          <div className="space-y-4">
-            <hr className="border-gray-300" />
-            <Link
-              to="/contact"
-              className="block text-gray-700 hover:text-teal-600"
-            >
-              Support
-            </Link>
-            <button className="text-red-600 hover:underline">Sign Out</button>
-          </div>
-        </aside>
-
+        <SideBar />
+        
         {/* Main Content Area */}
 
         <main className="flex-1 p-6 bg-white">
@@ -217,13 +263,54 @@ export default function DashboardLayout() {
                 <option value="screenplay">Screenplay</option>
               </select>
             </div>
-
+            {/* 
             <button
               onClick={handlePlayScript}
               className="flex items-center gap-2 py-1 px-3 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition"
             >
               <FaPlay />
               Play Script
+            </button> */}
+
+            {isLoading && (
+              <button
+                onClick={() => {
+                  if (abortController) {
+                    abortController.abort(); // abort the request
+                  }
+                }}
+                className="ml-2 py-1 px-3 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            )}
+
+           
+
+            <button
+              onClick={handlePlayScript}
+              className="flex items-center gap-2 py-1 px-3 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition"
+            >
+              <FaPlay />
+              {isLoading ? "Loading..." : isPlaying ? "Playing" : "Play Script"}
+            </button>
+
+            <button
+              onClick={handlePause}
+              className="flex items-center gap-2 py-1 px-3 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+              disabled={!isPlaying}
+            >
+              <FaPause />
+              {isPaused ? "Paused" : "Pause"}
+            </button>
+
+            <button
+              onClick={handleStop}
+              className="flex items-center gap-2 py-1 px-3 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              disabled={!isPlaying && !isPaused}
+            >
+              <FaStop />
+              {isPlaying || isPaused ? "Stop" : "Stopped"}
             </button>
           </div>
 
@@ -242,24 +329,23 @@ export default function DashboardLayout() {
               <div className="flex gap-4 py-1 px-2 align-center">
                 <label className="uppercase">narrator:</label>
                 <select
-                  name=""
-                  id=""
-                  className="py-1 px-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                  id="narrator"
+                  value={selectedVoice}
+                  onChange={(e) => setSelectedVoice(e.target.value)}
+                  className="w-full max-w-xs py-1 px-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
                 >
-                  <option value="">Aria</option>
-                  <option value="">Jane</option>
-                  <option value="">John</option>
-                  <option value=""></option>
-                  <option value=""></option>
-                  <option value=""></option>
-                  <option value=""></option>
-                  <option value=""></option>
-                  <option value=""></option>
-                  <option value=""></option>
+                  <option value="">Default voice</option>
+                  {voices.map((voice) => {
+                    return (<option key={voice.id} value={voice.id}>
+                      {voice.name}
+                    </option>)
+                  })
+                    
+                  }
                 </select>
               </div>
 
-              <div className="">
+              <div>
                 <p className=" bg-teal-700 text-white p-4">Speaker List:</p>
               </div>
               <div className="absolute bottom-0 left-0 border p-4 bg-teal-700 text-white w-full">
